@@ -1,0 +1,41 @@
+grammar math
+
+@start expr
+
+expr ret Int:
+    | term exprP(term) `return exprP`
+
+exprP(acc: Int) ret Int:
+    | PLUS term `val newAcc = acc + term` exprP(newAcc) `return exprP`
+    | MINUS term `val newAcc = acc - term` exprP(newAcc) `return exprP`
+    | `return acc`
+
+term ret Int:
+    | pow termP(pow) `return termP`
+
+termP(acc: Int) ret Int:
+    | MUL pow `val newAcc = acc * pow` termP(newAcc) `return termP`
+    | DIV pow `val newAcc = acc / pow` termP(newAcc) `return termP`
+    | `return acc`
+
+pow ret Int:
+    | factor powP `return factor.toDouble().pow(powP).toInt()`
+
+powP ret Int:
+    | POW factor powP `return factor.toDouble().pow(powP).toInt()`
+    | `return 1`
+
+factor ret Int:
+    | NUM `return num.toInt()`
+    | LPAREN expr RPAREN `return expr`
+    | MINUS factor `return -factor`
+
+WS: '[ \t\r\n]' skip
+PLUS: '\+'
+MINUS: '-'
+POW: '\*\*'
+MUL: '\*'
+DIV: '/'
+NUM: '[0-9]+'
+LPAREN: '\('
+RPAREN: '\)'

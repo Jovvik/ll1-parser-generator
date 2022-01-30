@@ -1,0 +1,44 @@
+grammar fn
+
+@header `import guru.nidi.graphviz.model.Factory.*
+import guru.nidi.graphviz.model.MutableGraph
+import guru.nidi.graphviz.model.MutableNode
+import guru.nidi.graphviz.attribute.Label`
+
+@fields `private var nodeCount = 0
+private fun node(label: String) = nodeCount++.let { mutNode(nodeCount.toString()).add(Label.of(label)) }`
+
+@start h
+
+h ret MutableGraph:
+    | `val g = mutGraph("fun").setDirected(true); val h=mutNode("h"); g.add(h)`
+    FN `h.addLink(mutNode(fn))`
+    NAME `h.addLink(mutNode(name))`
+    LPAREN `h.addLink(mutNode(lparen))`
+    p `h.addLink(p)`
+    RPAREN `h.addLink(mutNode(rparen))`
+    r `h.addLink(r); return g`
+
+
+p ret MutableNode:
+    | NAME t pprime `return node("P").addLink(node(name)).addLink(t).addLink(pprime)`
+    | `return node("P")`
+
+pprime ret MutableNode:
+    | COMMA p `return node("P'").addLink(node(comma)).addLink(p)`
+    | `return node("P'")`
+
+t ret MutableNode:
+    | COLON NAME `nodeCount++; return node("T").addLink(node(colon)).addLink(node(name))`
+
+r ret MutableNode:
+    | t `return node("R").addLink(t)`
+    | `return node("R")`
+
+WS: '[ \t\r\n]' skip
+FN: 'fun'
+LPAREN: '\('
+RPAREN: '\)'
+NAME: '[A-z]+'
+COMMA: ','
+COLON: ':'
